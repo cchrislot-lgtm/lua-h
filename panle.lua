@@ -1,11 +1,12 @@
 -- ============================================
--- PAINEL DO CRIS - ULTIMATE VIP (AIMBOT + SPINBOT SPEED + AIMKILL)
+-- PAINEL DO CRIS - ULTIMATE VIP (AIMBOT + AUTO-SHOOT + SPIN SPEED)
 -- ============================================
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
@@ -26,13 +27,13 @@ local ESPColor = Color3.fromRGB(0, 255, 150)
 local FOVVisible = false
 local FOVRadiusPercent = 0.5
 local AimbotActive = false
+local AutoShootActive = false
 
 local NoclipActive = false
 local FlyActive = false
 local FlySpeed = 50
 local SpinActive = false
-local SpinSpeedPercent = 0.3 -- 0 a 1 (Velocidade do Giro)
-local AimKillActive = false
+local SpinSpeedPercent = 0.3 -- Velocidade do Giro
 
 -- ScreenGui Principal
 local ScreenGui = Instance.new("ScreenGui")
@@ -41,7 +42,7 @@ ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 -- ============================================
--- 1. CÍRCULO FOV & AIMBOT
+-- 1. CÍRCULO FOV & LÓGICA DE MIRA
 -- ============================================
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 2
@@ -50,11 +51,10 @@ FOVCircle.Radius = 100
 FOVCircle.Filled = false
 FOVCircle.Visible = false
 
-local function getClosestPlayerToCursor()
-    local target = nil
+local function getClosestHeadToCursor()
+    local targetHead = nil
     local shortestDist = math.huge
-    local screenSize = Camera.ViewportSize
-    local center = Vector2.new(screenSize.X / 2, screenSize.Y / 2)
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     local maxRadius = FOVCircle.Radius
 
     for _, p in pairs(Players:GetPlayers()) do
@@ -66,25 +66,43 @@ local function getClosestPlayerToCursor()
                 local dist = (screenPos2D - center).Magnitude
                 if dist < maxRadius and dist < shortestDist then
                     shortestDist = dist
-                    target = head
+                    targetHead = head
                 end
             end
         end
     end
-    return target
+    return targetHead
 end
 
+-- Loop Principal de Câmera e Auto-Shoot
 RunService.RenderStepped:Connect(function()
     if Camera then
         FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         FOVCircle.Radius = 10 + (FOVRadiusPercent * 240)
     end
 
-    if AimbotActive and FOVVisible then
-        local targetHead = getClosestPlayerToCursor()
-        if targetHead then
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
-        end
+    local currentTargetHead = getClosestHeadToCursor()
+
+    -- Lock de Mira na Cabeça
+    if AimbotActive and currentTargetHead then
+        Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, currentTargetHead.Position)
+    end
+
+    -- Auto-Shoot (Atirar Automático ao focar na cabeça)
+    if AutoShootActive and currentTargetHead then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char then
+                local tool = char:FindFirstChildOfClass("Tool")
+                if tool then
+                    tool:Activate()
+                else
+                    VirtualUser:Button1Down(Vector2.new(0, 0))
+                    task.wait(0.05)
+                    VirtualUser:Button1Up(Vector2.new(0, 0))
+                end
+            end
+        end)
     end
 end)
 
@@ -250,11 +268,12 @@ end)
 -- ABA 2: AIMBOT
 -- ============================================
 local FOVToggleBtn = createButton(PageAim, "⚪ Bolinha da Tela (FOV): DESLIGADO", 0)
-local AimbotBtn = createButton(PageAim, "🎯 Aimbot Cabeça: DESLIGADO", 35)
+local AimbotBtn = createButton(PageAim, "🎯 Aimbot Cabeça (Lock): DESLIGADO", 35)
+local AutoShootBtn = createButton(PageAim, "🔫 Atirar Automático (Auto-Shoot): DESLIGADO", 70)
 
 local FOVLabel = Instance.new("TextLabel", PageAim)
 FOVLabel.BackgroundTransparency = 1
-FOVLabel.Position = UDim2.new(0, 5, 0, 75)
+FOVLabel.Position = UDim2.new(0, 5, 0, 110)
 FOVLabel.Size = UDim2.new(1, -10, 0, 20)
 FOVLabel.Text = "Tamanho da Bolinha: 50%"
 FOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -263,7 +282,7 @@ FOVLabel.Font = Enum.Font.GothamMedium
 
 local FOVSliderBg = Instance.new("Frame", PageAim)
 FOVSliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-FOVSliderBg.Position = UDim2.new(0, 10, 0, 100)
+FOVSliderBg.Position = UDim2.new(0, 10, 0, 135)
 FOVSliderBg.Size = UDim2.new(1, -20, 0, 18)
 Instance.new("UICorner", FOVSliderBg).CornerRadius = UDim.new(1, 0)
 
@@ -306,7 +325,7 @@ SpeedSliderBtn.Size = UDim2.new(1, 0, 1, 0)
 SpeedSliderBtn.Text = ""
 
 -- ============================================
--- ABA 4: HACKS (NOCLIP, FLY, SPINBOT + SLIDER, AIMKILL)
+-- ABA 4: HACKS (NOCLIP, FLY, SPINBOT + SLIDER)
 -- ============================================
 local NoclipBtn = createButton(PageHack, "🧱 Atravessar Parede: DESLIGADO", 0)
 local FlyBtn = createButton(PageHack, "🕊️ Voar (Fly): DESLIGADO", 40)
@@ -336,8 +355,6 @@ local SpinSliderBtn = Instance.new("TextButton", SpinSliderBg)
 SpinSliderBtn.BackgroundTransparency = 1
 SpinSliderBtn.Size = UDim2.new(1, 0, 1, 0)
 SpinSliderBtn.Text = ""
-
-local AimKillBtn = createButton(PageHack, "💥 Aimkill (Kill Proximidade): DESLIGADO", 165)
 
 -- ============================================
 -- ABA 5: MAPA / JOGADORES (LISTA + TELEPORTE)
@@ -406,15 +423,15 @@ Players.PlayerRemoving:Connect(refreshPlayerList)
 TabBtnMap.MouseButton1Click:Connect(refreshPlayerList)
 
 -- ============================================
--- LÓGICA DE SPINBOT & AIMKILL
+-- CONTROLES & EVENTOS DOS BOTOES
 -- ============================================
+
 SpinBtn.MouseButton1Click:Connect(function()
     SpinActive = not SpinActive
     SpinBtn.Text = "🌀 Girar Personagem (Spin): " .. (SpinActive and "LIGADO" or "DESLIGADO")
     SpinBtn.BackgroundColor3 = SpinActive and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(40, 40, 55)
 end)
 
--- Slider de Velocidade do Giro (Até 5% / Ajustável)
 local draggingSpin = false
 SpinSliderBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then draggingSpin = true end
@@ -436,38 +453,10 @@ end)
 RunService.RenderStepped:Connect(function()
     if SpinActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = LocalPlayer.Character.HumanoidRootPart
-        local speedMultiplier = 5 + (SpinSpeedPercent * 45) -- Varia a velocidade de rotação
+        local speedMultiplier = 5 + (SpinSpeedPercent * 45)
         hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speedMultiplier), 0)
     end
 end)
-
--- Aimkill (Kill Automático por Proximidade)
-AimKillBtn.MouseButton1Click:Connect(function()
-    AimKillActive = not AimKillActive
-    AimKillBtn.Text = "💥 Aimkill (Kill Proximidade): " .. (AimKillActive and "LIGADO" or "DESLIGADO")
-    AimKillBtn.BackgroundColor3 = AimKillActive and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(40, 40, 55)
-end)
-
-RunService.Heartbeat:Connect(function()
-    if AimKillActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local myHRP = LocalPlayer.Character.HumanoidRootPart
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") then
-                local enemyHRP = p.Character.HumanoidRootPart
-                local dist = (myHRP.Position - enemyHRP.Position).Magnitude
-                if dist <= 12 then -- Se chegar a 12 studs de proximidade
-                    pcall(function()
-                        p.Character.Humanoid.Health = 0 -- Mata automaticamente
-                    end)
-                end
-            end
-        end
-    end
-end)
-
--- ============================================
--- LÓGICA DOS OUTROS SISTEMAS
--- ============================================
 
 ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
@@ -585,7 +574,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- FOV & Aimbot Buttons
 FOVToggleBtn.MouseButton1Click:Connect(function()
     FOVVisible = not FOVVisible
     FOVCircle.Visible = FOVVisible
@@ -595,8 +583,14 @@ end)
 
 AimbotBtn.MouseButton1Click:Connect(function()
     AimbotActive = not AimbotActive
-    AimbotBtn.Text = "🎯 Aimbot Cabeça: " .. (AimbotActive and "LIGADO" or "DESLIGADO")
+    AimbotBtn.Text = "🎯 Aimbot Cabeça (Lock): " .. (AimbotActive and "LIGADO" or "DESLIGADO")
     AimbotBtn.BackgroundColor3 = AimbotActive and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(40, 40, 55)
+end)
+
+AutoShootBtn.MouseButton1Click:Connect(function()
+    AutoShootActive = not AutoShootActive
+    AutoShootBtn.Text = "🔫 Atirar Automático: " .. (AutoShootActive and "LIGADO" or "DESLIGADO")
+    AutoShootBtn.BackgroundColor3 = AutoShootActive and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(40, 40, 55)
 end)
 
 local draggingFOV = false
@@ -617,7 +611,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Velocidade
+-- Speed
 local draggingSpeed = false
 local function updateSpeed(percentage)
     local minSpd, maxSpd = 16, 300

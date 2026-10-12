@@ -1,5 +1,5 @@
 -- ============================================
--- PAINEL DO CRIS - VERSION 4.0 (ULTIMATE SHOOTER & SETTINGS)
+-- PAINEL DO CRIS - VERSION 4.1 (FIXED & GREEN BUTTONS)
 -- ============================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -15,9 +15,9 @@ if CoreGui:FindFirstChild("CrisTabHub") then
     CoreGui.CrisTabHub:Destroy()
 end
 
--- Estado das Configurações e Recursos
-local CurrentLang = "PT" -- "PT" ou "ES"
-local CurrentTheme = "Dark" -- "Dark" ou "Black"
+-- Estado do Script
+local CurrentLang = "PT"
+local CurrentTheme = "Dark"
 
 local ESPHoloActive = false
 local ESPNamesActive = false
@@ -38,11 +38,12 @@ local FlyActive = false
 local FlySpeedPercent = 0.3
 local SpinActive = false
 local SpinSpeedPercent = 0.3
+local CharacterSpeedPercent = 0.0
 
--- Dicionário de Idiomas
+-- Dicionário
 local Trans = {
     PT = {
-        Title = "PAINEL DO CRIS - v4.0",
+        Title = "PAINEL DO CRIS - v4.1",
         TabESP = "ESP",
         TabAim = "AIMBOT",
         TabSpeed = "VELOCIDADE",
@@ -67,18 +68,16 @@ local Trans = {
         FlySpd = "Velocidade do Voo: ",
         Spin = "🌀 Girar Personagem: ",
         SpinSpd = "Velocidade do Giro: ",
-        Targets = "Alvos Inimigos: ",
+        Targets = "Alvos Detectados: ",
         Theme = "🎨 Tema: ",
         Lang = "🌐 Idioma: ",
         On = "LIGADO",
         Off = "DESLIGADO",
         Top = "CIMA",
-        Bottom = "BAIXO",
-        Go = "Ir até",
-        Bring = "Trazer"
+        Bottom = "BAIXO"
     },
     ES = {
-        Title = "PANEL DE CRIS - v4.0",
+        Title = "PANEL DE CRIS - v4.1",
         TabESP = "ESP",
         TabAim = "AIMBOT",
         TabSpeed = "VELOCIDAD",
@@ -109,9 +108,7 @@ local Trans = {
         On = "ACTIVADO",
         Off = "DESACTIVADO",
         Top = "ARRIBA",
-        Bottom = "ABAJO",
-        Go = "Ir a",
-        Bring = "Traer"
+        Bottom = "ABAJO"
     }
 }
 
@@ -125,9 +122,7 @@ ScreenGui.Name = "CrisTabHub"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- ============================================
--- FILTRO DE INIMIGOS E OBJETOS UNIVERSAIS
--- ============================================
+-- DETECÇÃO DE TIME E ALVOS
 local function isEnemy(player, char)
     if player and player == LocalPlayer then return false end
     if player and LocalPlayer.Team and player.Team then
@@ -165,9 +160,7 @@ local function getAllTargets()
     return targets
 end
 
--- ============================================
--- 1. CÍRCULO FOV & AIMBOT (SILENT LOCK 360°)
--- ============================================
+-- CÍRCULO FOV & AIMBOT
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 2
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
@@ -209,12 +202,10 @@ RunService.RenderStepped:Connect(function()
 
     local currentTargetHead = getClosestHeadToCursor()
 
-    -- Lock de Mira na Cabeça
     if AimbotActive and currentTargetHead then
         Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, currentTargetHead.Position)
     end
 
-    -- Auto-Shoot Universal (Dispara direto na direção do alvo)
     if AutoShootActive and currentTargetHead then
         pcall(function()
             local char = LocalPlayer.Character
@@ -232,9 +223,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ============================================
--- 2. PAINEL PRINCIPAL E TEMAS
--- ============================================
+-- PAINEL PRINCIPAL (AUMENTADO)
 local ToggleButton = Instance.new("TextButton", ScreenGui)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
 ToggleButton.Position = UDim2.new(0, 15, 0.4, 0)
@@ -250,8 +239,8 @@ ToggleStroke.Thickness = 2.5
 
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-MainFrame.Position = UDim2.new(0.5, -145, 0.1, 0)
-MainFrame.Size = UDim2.new(0, 290, 0, 470)
+MainFrame.Position = UDim2.new(0.5, -160, 0.08, 0)
+MainFrame.Size = UDim2.new(0, 320, 0, 490) -- Painel Maior
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -260,6 +249,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Thickness = 2.5
 
+-- Plexus
 local PlexusCanvas = Instance.new("Frame", MainFrame)
 PlexusCanvas.Size = UDim2.new(1, 0, 1, 0)
 PlexusCanvas.BackgroundTransparency = 1
@@ -274,7 +264,7 @@ for i = 1, 15 do
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
     table.insert(nodes, {
         gui = dot,
-        pos = Vector2.new(math.random(10, 280), math.random(10, 450)),
+        pos = Vector2.new(math.random(10, 310), math.random(10, 480)),
         vel = Vector2.new(math.random(-20, 20)/10, math.random(-20, 20)/10)
     })
 end
@@ -287,8 +277,8 @@ RunService.RenderStepped:Connect(function(dt)
 
     for _, node in pairs(nodes) do
         node.pos = node.pos + (node.vel * (dt * 30))
-        if node.pos.X < 5 or node.pos.X > 285 then node.vel = Vector2.new(-node.vel.X, node.vel.Y) end
-        if node.pos.Y < 5 or node.pos.Y > 455 then node.vel = Vector2.new(node.vel.X, -node.vel.Y) end
+        if node.pos.X < 5 or node.pos.X > 315 then node.vel = Vector2.new(-node.vel.X, node.vel.Y) end
+        if node.pos.Y < 5 or node.pos.Y > 485 then node.vel = Vector2.new(node.vel.X, -node.vel.Y) end
         node.gui.Position = UDim2.new(0, node.pos.X, 0, node.pos.Y)
     end
 end)
@@ -324,12 +314,12 @@ local function createTabBtn(text, posX, width)
     return btn
 end
 
-local TabBtnESP = createTabBtn(L("TabESP"), 2, 40)
-local TabBtnAim = createTabBtn(L("TabAim"), 44, 48)
-local TabBtnSpeed = createTabBtn(L("TabSpeed"), 94, 58)
-local TabBtnHack = createTabBtn(L("TabHack"), 154, 40)
-local TabBtnMap = createTabBtn(L("TabMap"), 196, 42)
-local TabBtnSet = createTabBtn(L("TabSet"), 240, 40)
+local TabBtnESP = createTabBtn(L("TabESP"), 2, 45)
+local TabBtnAim = createTabBtn(L("TabAim"), 49, 52)
+local TabBtnSpeed = createTabBtn(L("TabSpeed"), 103, 65)
+local TabBtnHack = createTabBtn(L("TabHack"), 170, 45)
+local TabBtnMap = createTabBtn(L("TabMap"), 217, 45)
+local TabBtnSet = createTabBtn(L("TabSet"), 264, 44)
 
 local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.BackgroundTransparency = 1
@@ -374,11 +364,12 @@ TabBtnHack.MouseButton1Click:Connect(function() switchTab(PageHack, TabBtnHack) 
 TabBtnMap.MouseButton1Click:Connect(function() switchTab(PageMap, TabBtnMap) end)
 TabBtnSet.MouseButton1Click:Connect(function() switchTab(PageSet, TabBtnSet) end)
 
+-- GERADOR DE BOTÕES COM ESTADO VERDE
 local function createButton(parent, text, posY)
     local btn = Instance.new("TextButton", parent)
     btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
     btn.Position = UDim2.new(0, 5, 0, posY)
-    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.Size = UDim2.new(1, -10, 0, 32)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(240, 240, 240)
     btn.TextSize = 10
@@ -392,28 +383,32 @@ local function createButton(parent, text, posY)
     return btn
 end
 
--- ============================================
--- ABA 1: ESP
--- ============================================
-local ESPHoloBtn = createButton(PageESP, "", 0)
-local ESPNameBtn = createButton(PageESP, "", 34)
-local ESPBoxBtn = createButton(PageESP, "", 68)
-local ESPLineBtn = createButton(PageESP, "", 102)
-local ESPLinePosBtn = createButton(PageESP, "", 136)
-local ESPDistBtn = createButton(PageESP, "", 170)
-local ESPRainbowBtn = createButton(PageESP, "", 204)
-local ColorPickerBtn = createButton(PageESP, "", 238)
+local function applyButtonState(btn, state)
+    if state then
+        btn.BackgroundColor3 = Color3.fromRGB(0, 180, 80) -- VERDE LIGADO
+    else
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45) -- ESCURO DESLIGADO
+    end
+end
 
--- ============================================
+-- ABA 1: ESP
+local ESPHoloBtn = createButton(PageESP, "", 0)
+local ESPNameBtn = createButton(PageESP, "", 36)
+local ESPBoxBtn = createButton(PageESP, "", 72)
+local ESPLineBtn = createButton(PageESP, "", 108)
+local ESPLinePosBtn = createButton(PageESP, "", 144)
+local ESPDistBtn = createButton(PageESP, "", 180)
+local ESPRainbowBtn = createButton(PageESP, "", 216)
+local ColorPickerBtn = createButton(PageESP, "", 252)
+
 -- ABA 2: AIMBOT
--- ============================================
 local FOVToggleBtn = createButton(PageAim, "", 0)
-local AimbotBtn = createButton(PageAim, "", 34)
-local AutoShootBtn = createButton(PageAim, "", 68)
+local AimbotBtn = createButton(PageAim, "", 36)
+local AutoShootBtn = createButton(PageAim, "", 72)
 
 local FOVLabel = Instance.new("TextLabel", PageAim)
 FOVLabel.BackgroundTransparency = 1
-FOVLabel.Position = UDim2.new(0, 5, 0, 108)
+FOVLabel.Position = UDim2.new(0, 5, 0, 114)
 FOVLabel.Size = UDim2.new(1, -10, 0, 18)
 FOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 FOVLabel.TextSize = 10
@@ -422,8 +417,8 @@ FOVLabel.ZIndex = 3
 
 local FOVSliderBg = Instance.new("Frame", PageAim)
 FOVSliderBg.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-FOVSliderBg.Position = UDim2.new(0, 10, 0, 128)
-FOVSliderBg.Size = UDim2.new(1, -20, 0, 14)
+FOVSliderBg.Position = UDim2.new(0, 10, 0, 136)
+FOVSliderBg.Size = UDim2.new(1, -20, 0, 18)
 FOVSliderBg.ZIndex = 3
 Instance.new("UICorner", FOVSliderBg).CornerRadius = UDim.new(1, 0)
 
@@ -439,9 +434,7 @@ FOVSliderBtn.Size = UDim2.new(1, 0, 1, 0)
 FOVSliderBtn.Text = ""
 FOVSliderBtn.ZIndex = 4
 
--- ============================================
 -- ABA 3: VELOCIDADE
--- ============================================
 local SpeedLabel = Instance.new("TextLabel", PageSpeed)
 SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Position = UDim2.new(0, 5, 0, 10)
@@ -454,7 +447,7 @@ SpeedLabel.ZIndex = 3
 local SpeedSliderBg = Instance.new("Frame", PageSpeed)
 SpeedSliderBg.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
 SpeedSliderBg.Position = UDim2.new(0, 10, 0, 38)
-SpeedSliderBg.Size = UDim2.new(1, -20, 0, 16)
+SpeedSliderBg.Size = UDim2.new(1, -20, 0, 18)
 SpeedSliderBg.ZIndex = 3
 Instance.new("UICorner", SpeedSliderBg).CornerRadius = UDim.new(1, 0)
 
@@ -470,16 +463,14 @@ SpeedSliderBtn.Size = UDim2.new(1, 0, 1, 0)
 SpeedSliderBtn.Text = ""
 SpeedSliderBtn.ZIndex = 4
 
--- ============================================
 -- ABA 4: HACKS
--- ============================================
 local NoclipBtn = createButton(PageHack, "", 0)
-local FlyBtn = createButton(PageHack, "", 34)
+local FlyBtn = createButton(PageHack, "", 36)
 
 local FlyLabel = Instance.new("TextLabel", PageHack)
 FlyLabel.BackgroundTransparency = 1
-FlyLabel.Position = UDim2.new(0, 5, 0, 68)
-FlyLabel.Size = UDim2.new(1, -10, 0, 16)
+FlyLabel.Position = UDim2.new(0, 5, 0, 74)
+FlyLabel.Size = UDim2.new(1, -10, 0, 18)
 FlyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 FlyLabel.TextSize = 10
 FlyLabel.Font = Enum.Font.GothamMedium
@@ -487,8 +478,8 @@ FlyLabel.ZIndex = 3
 
 local FlySliderBg = Instance.new("Frame", PageHack)
 FlySliderBg.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-FlySliderBg.Position = UDim2.new(0, 10, 0, 86)
-FlySliderBg.Size = UDim2.new(1, -20, 0, 14)
+FlySliderBg.Position = UDim2.new(0, 10, 0, 94)
+FlySliderBg.Size = UDim2.new(1, -20, 0, 18)
 FlySliderBg.ZIndex = 3
 Instance.new("UICorner", FlySliderBg).CornerRadius = UDim.new(1, 0)
 
@@ -504,12 +495,12 @@ FlySliderBtn.Size = UDim2.new(1, 0, 1, 0)
 FlySliderBtn.Text = ""
 FlySliderBtn.ZIndex = 4
 
-local SpinBtn = createButton(PageHack, "", 108)
+local SpinBtn = createButton(PageHack, "", 120)
 
 local SpinLabel = Instance.new("TextLabel", PageHack)
 SpinLabel.BackgroundTransparency = 1
-SpinLabel.Position = UDim2.new(0, 5, 0, 142)
-SpinLabel.Size = UDim2.new(1, -10, 0, 16)
+SpinLabel.Position = UDim2.new(0, 5, 0, 158)
+SpinLabel.Size = UDim2.new(1, -10, 0, 18)
 SpinLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpinLabel.TextSize = 10
 SpinLabel.Font = Enum.Font.GothamMedium
@@ -517,8 +508,8 @@ SpinLabel.ZIndex = 3
 
 local SpinSliderBg = Instance.new("Frame", PageHack)
 SpinSliderBg.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-SpinSliderBg.Position = UDim2.new(0, 10, 0, 160)
-SpinSliderBg.Size = UDim2.new(1, -20, 0, 14)
+SpinSliderBg.Position = UDim2.new(0, 10, 0, 178)
+SpinSliderBg.Size = UDim2.new(1, -20, 0, 18)
 SpinSliderBg.ZIndex = 3
 Instance.new("UICorner", SpinSliderBg).CornerRadius = UDim.new(1, 0)
 
@@ -534,9 +525,7 @@ SpinSliderBtn.Size = UDim2.new(1, 0, 1, 0)
 SpinSliderBtn.Text = ""
 SpinSliderBtn.ZIndex = 4
 
--- ============================================
 -- ABA 5: MAPA
--- ============================================
 local MapHeader = Instance.new("TextLabel", PageMap)
 MapHeader.BackgroundTransparency = 1
 MapHeader.Position = UDim2.new(0, 5, 0, 0)
@@ -548,8 +537,8 @@ MapHeader.ZIndex = 3
 
 local PlayerScroll = Instance.new("ScrollingFrame", PageMap)
 PlayerScroll.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
-PlayerScroll.Position = UDim2.new(0, 5, 0, 22)
-PlayerScroll.Size = UDim2.new(1, -10, 1, -26)
+PlayerScroll.Position = UDim2.new(0, 5, 0, 24)
+PlayerScroll.Size = UDim2.new(1, -10, 1, -28)
 PlayerScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 PlayerScroll.ScrollBarThickness = 4
 PlayerScroll.ZIndex = 3
@@ -559,9 +548,7 @@ local UIListLayout = Instance.new("UIListLayout", PlayerScroll)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
--- ============================================
--- ABA 6: CONFIGURAÇÕES (TEMA E IDIOMA)
--- ============================================
+-- ABA 6: CONFIGS
 local ThemeBtn = createButton(PageSet, "", 0)
 local LangBtn = createButton(PageSet, "", 38)
 
@@ -575,24 +562,51 @@ local function updateUIStrings()
     TabBtnSet.Text = L("TabSet")
 
     ESPHoloBtn.Text = L("Holo") .. (ESPHoloActive and L("On") or L("Off"))
+    applyButtonState(ESPHoloBtn, ESPHoloActive)
+
     ESPNameBtn.Text = L("Name") .. (ESPNamesActive and L("On") or L("Off"))
+    applyButtonState(ESPNameBtn, ESPNamesActive)
+
     ESPBoxBtn.Text = L("Box") .. (ESPBoxActive and L("On") or L("Off"))
+    applyButtonState(ESPBoxBtn, ESPBoxActive)
+
     ESPLineBtn.Text = L("Line") .. (ESPLinesActive and L("On") or L("Off"))
+    applyButtonState(ESPLineBtn, ESPLinesActive)
+
     ESPLinePosBtn.Text = L("LinePos") .. (LineOriginTop and L("Top") or L("Bottom"))
+
     ESPDistBtn.Text = L("Dist") .. (ESPDistanceActive and L("On") or L("Off"))
+    applyButtonState(ESPDistBtn, ESPDistanceActive)
+
     ESPRainbowBtn.Text = L("Rainbow") .. (ESPRainbowActive and L("On") or L("Off"))
+    applyButtonState(ESPRainbowBtn, ESPRainbowActive)
+
     ColorPickerBtn.Text = L("Color")
+    ColorPickerBtn.BackgroundColor3 = ESPColor
 
     FOVToggleBtn.Text = L("FOV") .. (FOVVisible and L("On") or L("Off"))
-    AimbotBtn.Text = L("Aim") .. (AimbotActive and L("On") or L("Off"))
-    AutoShootBtn.Text = L("Shoot") .. (AutoShootActive and L("On") or L("Off"))
-    FOVLabel.Text = L("FOVSize") .. math.floor(FOVRadiusPercent * 100) .. "%"
+    applyButtonState(FOVToggleBtn, FOVVisible)
 
-    SpeedLabel.Text = L("WalkSpd") .. "0%"
+    AimbotBtn.Text = L("Aim") .. (AimbotActive and L("On") or L("Off"))
+    applyButtonState(AimbotBtn, AimbotActive)
+
+    AutoShootBtn.Text = L("Shoot") .. (AutoShootActive and L("On") or L("Off"))
+    applyButtonState(AutoShootBtn, AutoShootActive)
+
+    FOVLabel.Text = L("FOVSize") .. math.floor(FOVRadiusPercent * 100) .. "%"
+    SpeedLabel.Text = L("WalkSpd") .. math.floor(CharacterSpeedPercent * 100) .. "%"
+
     NoclipBtn.Text = L("Noclip") .. (NoclipActive and L("On") or L("Off"))
+    applyButtonState(NoclipBtn, NoclipActive)
+
     FlyBtn.Text = L("Fly") .. (FlyActive and L("On") or L("Off"))
+    applyButtonState(FlyBtn, FlyActive)
+
     FlyLabel.Text = L("FlySpd") .. math.floor(FlySpeedPercent * 100) .. "%"
+
     SpinBtn.Text = L("Spin") .. (SpinActive and L("On") or L("Off"))
+    applyButtonState(SpinBtn, SpinActive)
+
     SpinLabel.Text = L("SpinSpd") .. math.floor(SpinSpeedPercent * 100) .. "%"
 
     ThemeBtn.Text = L("Theme") .. (CurrentTheme == "Dark" and "Escuro / Oscuro" or "Preto / Negro")
@@ -618,11 +632,50 @@ LangBtn.MouseButton1Click:Connect(function()
     updateUIStrings()
 end)
 
-updateUIStrings()
+-- SISTEMA DE SLIDERS FUNCIONAL
+local function setupSlider(sliderBtn, sliderBg, sliderFill, labelTextKey, percentVarSetter)
+    local dragging = false
+    local function update(input)
+        local mouseX = input.Position.X
+        local sliderX = sliderBg.AbsolutePosition.X
+        local sliderWidth = sliderBg.AbsoluteSize.X
+        local pct = math.clamp((mouseX - sliderX) / sliderWidth, 0, 1)
+        sliderFill.Size = UDim2.new(pct, 0, 1, 0)
+        percentVarSetter(pct)
+        updateUIStrings()
+    end
 
--- ============================================
--- RENDERIZADOR ESP & LINHA RAINBOW + COR DE MORTO
--- ============================================
+    sliderBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            update(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            update(input)
+        end
+    end)
+end
+
+setupSlider(FOVSliderBtn, FOVSliderBg, FOVSliderFill, "FOVSize", function(p) FOVRadiusPercent = p end)
+setupSlider(SpeedSliderBtn, SpeedSliderBg, SpeedSliderFill, "WalkSpd", function(p)
+    CharacterSpeedPercent = p
+    local minSpd, maxSpd = 16, 300
+    local finalSpeed = minSpd + ((maxSpd - minSpd) * p)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = finalSpeed
+    end
+end)
+setupSlider(FlySliderBtn, FlySliderBg, FlySliderFill, "FlySpd", function(p) FlySpeedPercent = p end)
+setupSlider(SpinSliderBtn, SpinSliderBg, SpinSliderFill, "SpinSpd", function(p) SpinSpeedPercent = p end)
+
+-- ESP & HIGHLIGHTS
 local Boxes, Lines, Names, espHighlights = {}, {}, {}, {}
 
 local function clearESP()
@@ -633,18 +686,72 @@ local function clearESP()
     espHighlights = {}
 end
 
-ESPRainbowBtn.MouseButton1Click:Connect(function()
-    ESPRainbowActive = not ESPRainbowActive
-    updateUIStrings()
-end)
-
 local colorList = {Color3.fromRGB(0, 255, 150), Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 170, 255), Color3.fromRGB(255, 255, 0), Color3.fromRGB(255, 0, 255)}
 local currentColorIdx = 1
 
 ColorPickerBtn.MouseButton1Click:Connect(function()
     currentColorIdx = (currentColorIdx % #colorList) + 1
     ESPColor = colorList[currentColorIdx]
-    ColorPickerBtn.BackgroundColor3 = ESPColor
+    updateUIStrings()
+end)
+
+ESPHoloBtn.MouseButton1Click:Connect(function() ESPHoloActive = not ESPHoloActive updateUIStrings() if not ESPHoloActive then clearESP() end end)
+ESPNameBtn.MouseButton1Click:Connect(function() ESPNamesActive = not ESPNamesActive updateUIStrings() if not ESPNamesActive then clearESP() end end)
+ESPBoxBtn.MouseButton1Click:Connect(function() ESPBoxActive = not ESPBoxActive updateUIStrings() if not ESPBoxActive then clearESP() end end)
+ESPLineBtn.MouseButton1Click:Connect(function() ESPLinesActive = not ESPLinesActive updateUIStrings() if not ESPLinesActive then clearESP() end end)
+ESPDistBtn.MouseButton1Click:Connect(function() ESPDistanceActive = not ESPDistanceActive updateUIStrings() if not ESPDistanceActive then clearESP() end end)
+ESPRainbowBtn.MouseButton1Click:Connect(function() ESPRainbowActive = not ESPRainbowActive updateUIStrings() end)
+ESPLinePosBtn.MouseButton1Click:Connect(function() LineOriginTop = not LineOriginTop updateUIStrings() end)
+
+FOVToggleBtn.MouseButton1Click:Connect(function() FOVVisible = not FOVVisible FOVCircle.Visible = FOVVisible updateUIStrings() end)
+AimbotBtn.MouseButton1Click:Connect(function() AimbotActive = not AimbotActive updateUIStrings() end)
+AutoShootBtn.MouseButton1Click:Connect(function() AutoShootActive = not AutoShootActive updateUIStrings() end)
+
+NoclipBtn.MouseButton1Click:Connect(function() NoclipActive = not NoclipActive updateUIStrings() end)
+RunService.Stepped:Connect(function()
+    if NoclipActive and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end
+end)
+
+local BodyVelocity, BodyGyro
+FlyBtn.MouseButton1Click:Connect(function()
+    FlyActive = not FlyActive
+    updateUIStrings()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        if FlyActive then
+            BodyGyro = Instance.new("BodyGyro", char.HumanoidRootPart)
+            BodyGyro.P = 9e4
+            BodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+            BodyVelocity = Instance.new("BodyVelocity", char.HumanoidRootPart)
+            BodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+            char.Humanoid.PlatformStand = true
+        else
+            if BodyGyro then BodyGyro:Destroy() end
+            if BodyVelocity then BodyVelocity:Destroy() end
+            char.Humanoid.PlatformStand = false
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if FlyActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local currentFlySpeed = 20 + (FlySpeedPercent * 180)
+        BodyGyro.cframe = Camera.CFrame
+        BodyVelocity.velocity = Camera.CFrame.LookVector * currentFlySpeed
+    end
+end)
+
+SpinBtn.MouseButton1Click:Connect(function() SpinActive = not SpinActive updateUIStrings() end)
+RunService.RenderStepped:Connect(function()
+    if SpinActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        local speedMultiplier = 5 + (SpinSpeedPercent * 45)
+        hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speedMultiplier), 0)
+    end
 end)
 
 RunService.RenderStepped:Connect(function()
@@ -709,65 +816,5 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ============================================
--- CONTROLES RESTANTES DE BOTOES E SLIDERS
--- ============================================
-ESPHoloBtn.MouseButton1Click:Connect(function() ESPHoloActive = not ESPHoloActive updateUIStrings() if not ESPHoloActive then clearESP() end end)
-ESPNameBtn.MouseButton1Click:Connect(function() ESPNamesActive = not ESPNamesActive updateUIStrings() if not ESPNamesActive then clearESP() end end)
-ESPBoxBtn.MouseButton1Click:Connect(function() ESPBoxActive = not ESPBoxActive updateUIStrings() if not ESPBoxActive then clearESP() end end)
-ESPLineBtn.MouseButton1Click:Connect(function() ESPLinesActive = not ESPLinesActive updateUIStrings() if not ESPLinesActive then clearESP() end end)
-ESPDistBtn.MouseButton1Click:Connect(function() ESPDistanceActive = not ESPDistanceActive updateUIStrings() if not ESPDistanceActive then clearESP() end end)
-ESPLinePosBtn.MouseButton1Click:Connect(function() LineOriginTop = not LineOriginTop updateUIStrings() end)
-
-FOVToggleBtn.MouseButton1Click:Connect(function() FOVVisible = not FOVVisible FOVCircle.Visible = FOVVisible updateUIStrings() end)
-AimbotBtn.MouseButton1Click:Connect(function() AimbotActive = not AimbotActive updateUIStrings() end)
-AutoShootBtn.MouseButton1Click:Connect(function() AutoShootActive = not AutoShootActive updateUIStrings() end)
-
-NoclipBtn.MouseButton1Click:Connect(function() NoclipActive = not NoclipActive updateUIStrings() end)
-RunService.Stepped:Connect(function()
-    if NoclipActive and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-    end
-end)
-
-local BodyVelocity, BodyGyro
-FlyBtn.MouseButton1Click:Connect(function()
-    FlyActive = not FlyActive
-    updateUIStrings()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        if FlyActive then
-            BodyGyro = Instance.new("BodyGyro", char.HumanoidRootPart)
-            BodyGyro.P = 9e4
-            BodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-            BodyVelocity = Instance.new("BodyVelocity", char.HumanoidRootPart)
-            BodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
-            char.Humanoid.PlatformStand = true
-        else
-            if BodyGyro then BodyGyro:Destroy() end
-            if BodyVelocity then BodyVelocity:Destroy() end
-            char.Humanoid.PlatformStand = false
-        end
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if FlyActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local currentFlySpeed = 20 + (FlySpeedPercent * 180)
-        BodyGyro.cframe = Camera.CFrame
-        BodyVelocity.velocity = Camera.CFrame.LookVector * currentFlySpeed
-    end
-end)
-
-SpinBtn.MouseButton1Click:Connect(function() SpinActive = not SpinActive updateUIStrings() end)
-RunService.RenderStepped:Connect(function()
-    if SpinActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = LocalPlayer.Character.HumanoidRootPart
-        local speedMultiplier = 5 + (SpinSpeedPercent * 45)
-        hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speedMultiplier), 0)
-    end
-end)
-
 ToggleButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+updateUIStrings()

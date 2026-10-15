@@ -1,5 +1,5 @@
 -- ============================================
--- PAINEL DO CRIS - VERSION 4.1 (FIXED & GREEN BUTTONS)
+-- PAINEL DO CRIS - VERSION 4.3 (HOLOGRAMA FIX & ALL FEATURES)
 -- ============================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -43,7 +43,7 @@ local CharacterSpeedPercent = 0.0
 -- Dicionário
 local Trans = {
     PT = {
-        Title = "PAINEL DO CRIS - v4.1",
+        Title = "PAINEL DO CRIS - v4.3",
         TabESP = "ESP",
         TabAim = "AIMBOT",
         TabSpeed = "VELOCIDADE",
@@ -74,10 +74,12 @@ local Trans = {
         On = "LIGADO",
         Off = "DESLIGADO",
         Top = "CIMA",
-        Bottom = "BAIXO"
+        Bottom = "BAIXO",
+        Go = "Ir até",
+        Bring = "Trazer"
     },
     ES = {
-        Title = "PANEL DE CRIS - v4.1",
+        Title = "PANEL DE CRIS - v4.3",
         TabESP = "ESP",
         TabAim = "AIMBOT",
         TabSpeed = "VELOCIDAD",
@@ -108,7 +110,9 @@ local Trans = {
         On = "ACTIVADO",
         Off = "DESACTIVADO",
         Top = "ARRIBA",
-        Bottom = "ABAJO"
+        Bottom = "ABAJO",
+        Go = "Ir a",
+        Bring = "Traer"
     }
 }
 
@@ -223,7 +227,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- PAINEL PRINCIPAL (AUMENTADO)
+-- PAINEL PRINCIPAL
 local ToggleButton = Instance.new("TextButton", ScreenGui)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
 ToggleButton.Position = UDim2.new(0, 15, 0.4, 0)
@@ -240,7 +244,7 @@ ToggleStroke.Thickness = 2.5
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
 MainFrame.Position = UDim2.new(0.5, -160, 0.08, 0)
-MainFrame.Size = UDim2.new(0, 320, 0, 490) -- Painel Maior
+MainFrame.Size = UDim2.new(0, 320, 0, 490)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -385,9 +389,9 @@ end
 
 local function applyButtonState(btn, state)
     if state then
-        btn.BackgroundColor3 = Color3.fromRGB(0, 180, 80) -- VERDE LIGADO
+        btn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
     else
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45) -- ESCURO DESLIGADO
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
     end
 end
 
@@ -548,6 +552,79 @@ local UIListLayout = Instance.new("UIListLayout", PlayerScroll)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
+local function refreshPlayerList()
+    for _, child in pairs(PlayerScroll:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    local allTargets = getAllTargets()
+    MapHeader.Text = L("Targets") .. #allTargets
+
+    for _, target in pairs(allTargets) do
+        local char = target.Character
+        local nameStr = target.Player and target.Player.DisplayName or char.Name
+        local rootPart = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+
+        if rootPart then
+            local card = Instance.new("Frame", PlayerScroll)
+            card.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            card.Size = UDim2.new(1, -8, 0, 36)
+            card.ZIndex = 3
+            Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
+
+            local pName = Instance.new("TextLabel", card)
+            pName.BackgroundTransparency = 1
+            pName.Position = UDim2.new(0, 8, 0, 0)
+            pName.Size = UDim2.new(0.5, 0, 1, 0)
+            pName.Text = nameStr
+            pName.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pName.TextSize = 10
+            pName.Font = Enum.Font.GothamBold
+            pName.TextXAlignment = Enum.TextXAlignment.Left
+            pName.ZIndex = 3
+
+            local tpToBtn = Instance.new("TextButton", card)
+            tpToBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+            tpToBtn.Position = UDim2.new(0.52, 0, 0.15, 0)
+            tpToBtn.Size = UDim2.new(0.22, 0, 0.7, 0)
+            tpToBtn.Text = L("Go")
+            tpToBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            tpToBtn.TextSize = 9
+            tpToBtn.Font = Enum.Font.GothamBold
+            tpToBtn.ZIndex = 4
+            Instance.new("UICorner", tpToBtn).CornerRadius = UDim.new(0, 4)
+
+            tpToBtn.MouseButton1Click:Connect(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = rootPart.CFrame * CFrame.new(0, 0, -3)
+                end
+            end)
+
+            local bringBtn = Instance.new("TextButton", card)
+            bringBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+            bringBtn.Position = UDim2.new(0.76, 0, 0.15, 0)
+            bringBtn.Size = UDim2.new(0.22, 0, 0.7, 0)
+            bringBtn.Text = L("Bring")
+            bringBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            bringBtn.TextSize = 9
+            bringBtn.Font = Enum.Font.GothamBold
+            bringBtn.ZIndex = 4
+            Instance.new("UICorner", bringBtn).CornerRadius = UDim.new(0, 4)
+
+            bringBtn.MouseButton1Click:Connect(function()
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    rootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+                end
+            end)
+        end
+    end
+    PlayerScroll.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+end
+
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
+TabBtnMap.MouseButton1Click:Connect(refreshPlayerList)
+
 -- ABA 6: CONFIGS
 local ThemeBtn = createButton(PageSet, "", 0)
 local LangBtn = createButton(PageSet, "", 38)
@@ -611,6 +688,8 @@ local function updateUIStrings()
 
     ThemeBtn.Text = L("Theme") .. (CurrentTheme == "Dark" and "Escuro / Oscuro" or "Preto / Negro")
     LangBtn.Text = L("Lang") .. (CurrentLang == "PT" and "Português 🇧🇷" or "Español 🇪🇸")
+
+    refreshPlayerList()
 end
 
 ThemeBtn.MouseButton1Click:Connect(function()
@@ -632,8 +711,8 @@ LangBtn.MouseButton1Click:Connect(function()
     updateUIStrings()
 end)
 
--- SISTEMA DE SLIDERS FUNCIONAL
-local function setupSlider(sliderBtn, sliderBg, sliderFill, labelTextKey, percentVarSetter)
+-- SISTEMA DE SLIDERS
+local function setupSlider(sliderBtn, sliderBg, sliderFill, percentVarSetter)
     local dragging = false
     local function update(input)
         local mouseX = input.Position.X
@@ -663,8 +742,8 @@ local function setupSlider(sliderBtn, sliderBg, sliderFill, labelTextKey, percen
     end)
 end
 
-setupSlider(FOVSliderBtn, FOVSliderBg, FOVSliderFill, "FOVSize", function(p) FOVRadiusPercent = p end)
-setupSlider(SpeedSliderBtn, SpeedSliderBg, SpeedSliderFill, "WalkSpd", function(p)
+setupSlider(FOVSliderBtn, FOVSliderBg, FOVSliderFill, function(p) FOVRadiusPercent = p end)
+setupSlider(SpeedSliderBtn, SpeedSliderBg, SpeedSliderFill, function(p)
     CharacterSpeedPercent = p
     local minSpd, maxSpd = 16, 300
     local finalSpeed = minSpd + ((maxSpd - minSpd) * p)
@@ -672,10 +751,10 @@ setupSlider(SpeedSliderBtn, SpeedSliderBg, SpeedSliderFill, "WalkSpd", function(
         LocalPlayer.Character.Humanoid.WalkSpeed = finalSpeed
     end
 end)
-setupSlider(FlySliderBtn, FlySliderBg, FlySliderFill, "FlySpd", function(p) FlySpeedPercent = p end)
-setupSlider(SpinSliderBtn, SpinSliderBg, SpinSliderFill, "SpinSpd", function(p) SpinSpeedPercent = p end)
+setupSlider(FlySliderBtn, FlySliderBg, FlySliderFill, function(p) FlySpeedPercent = p end)
+setupSlider(SpinSliderBtn, SpinSliderBg, SpinSliderFill, function(p) SpinSpeedPercent = p end)
 
--- ESP & HIGHLIGHTS
+-- ESP & HIGHLIGHTS CORRIGIDO
 local Boxes, Lines, Names, espHighlights = {}, {}, {}, {}
 
 local function clearESP()
@@ -763,6 +842,33 @@ RunService.RenderStepped:Connect(function()
         activeColor = Color3.fromHSV(hue, 1, 1)
     end
 
+    -- PROCESSAR HOLOGRAMA (HIGHLIGHT)
+    for _, t in pairs(allTargets) do
+        local char = t.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        
+        if ESPHoloActive and char and hum and hum.Health > 0 then
+            if not espHighlights[char] or not espHighlights[char].Parent then
+                pcall(function()
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "CrisHolo"
+                    hl.FillColor = activeColor
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.FillTransparency = 0.3
+                    hl.Adornee = char
+                    hl.Parent = char
+                    espHighlights[char] = hl
+                end)
+            elseif espHighlights[char] then
+                espHighlights[char].FillColor = activeColor
+            end
+        elseif not ESPHoloActive and espHighlights[char] then
+            pcall(function() espHighlights[char]:Destroy() end)
+            espHighlights[char] = nil
+        end
+    end
+
+    -- PROCESSAR OUTROS ESPS (BOX, LINHA, NOME, DISTANCIA)
     for _, t in pairs(allTargets) do
         local char = t.Character
         local hum = char:FindFirstChildOfClass("Humanoid")
